@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "99995806902",
+    "project_id": "rps-claim-manager-1f250",
+    "storage_bucket": "rps-claim-manager-1f250.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:99995806902:android:6c4aa7405e1cc447410a17",
+        "android_client_info": {
+          "package_name": "com.claimmanager.claims"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfAVsv5Mz8COqTem5E-KkbFaW92pvvBfo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

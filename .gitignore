@@ -67,3 +67,7 @@
 .history
 .svn/
 migrate_working_dir/
+
+# Exception: Allow build/web for Cloudflare Pages deployment
+!build/web/
+!build/web/**

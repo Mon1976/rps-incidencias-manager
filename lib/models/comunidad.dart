@@ -77,10 +77,10 @@ class Comunidad {
   factory Comunidad.fromFirestore(Map<String, dynamic> data, String documentId) {
     return Comunidad(
       id: documentId,
-      nombre: data['nombre'] as String,
-      direccion: data['direccion'] as String,
-      ciudad: data['ciudad'] as String,
-      codigoPostal: data['codigoPostal'] as String,
+      nombre: data['nombre'] as String? ?? 'Sin nombre',
+      direccion: data['direccion'] as String? ?? '',
+      ciudad: data['ciudad'] as String? ?? '',
+      codigoPostal: data['codigoPostal'] as String? ?? '',
       telefono: data['telefono'] as String?,
       email: data['email'] as String?,
       companiaAseguradora: data['companiaAseguradora'] as String?,

@@ -44,9 +44,9 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyB1lA2TnGbYOqJwqvBU8l6Z9F6gkbqFZBc',
-    appId: '1:461936537433:web:38a16e6e84d0e2fa4ca826',
-    messagingSenderId: '461936537433',
+    apiKey: 'AIzaSyDfAVsv5Mz8COqTem5E-KkbFaW92pvvBfo',
+    appId: '1:99995806902:web:WEBAPPID',
+    messagingSenderId: '99995806902',
     projectId: 'rps-claim-manager-1f250',
     authDomain: 'rps-claim-manager-1f250.firebaseapp.com',
     storageBucket: 'rps-claim-manager-1f250.firebasestorage.app',

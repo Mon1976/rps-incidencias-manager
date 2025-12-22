@@ -98,6 +98,18 @@ class FirebaseService {
 
   // ==================== PROVEEDORES ====================
 
+  /// Obtener todos los proveedores como Future (para carga inicial)
+  static Future<List<Proveedor>> getProveedores() async {
+    final snapshot = await _firestore
+        .collection('proveedores')
+        .orderBy('nombre')
+        .get();
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return Proveedor.fromFirestore(data, doc.id);
+    }).toList();
+  }
+
   /// Obtener todos los proveedores en tiempo real
   static Stream<List<Proveedor>> getProveedoresStream() {
     return _firestore
@@ -143,6 +155,18 @@ class FirebaseService {
   }
 
   // ==================== COMUNIDADES (compartidas con Claim Manager) ====================
+
+  /// Obtener todas las comunidades como Future (para carga inicial)
+  static Future<List<Comunidad>> getComunidades() async {
+    final snapshot = await _firestore
+        .collection('comunidades')
+        .orderBy('nombre')
+        .get();
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return Comunidad.fromFirestore(data, doc.id);
+    }).toList();
+  }
 
   /// Obtener todas las comunidades en tiempo real
   static Stream<List<Comunidad>> getComunidadesStream() {

@@ -14,11 +14,7 @@ class NuevaIncidenciaScreen extends StatefulWidget {
 
 class _NuevaIncidenciaScreenState extends State<NuevaIncidenciaScreen> {
   final _formKey = GlobalKey<FormState>();
-  bool _isLoading = true;
-  bool _hasError = false;
-  String _errorMessage = '';
-  List<Comunidad> _comunidades = [];
-  List<Proveedor> _proveedores = [];
+  bool _isLoading = false;
 
   // Controllers
   final _descripcionController = TextEditingController();
@@ -37,36 +33,6 @@ class _NuevaIncidenciaScreenState extends State<NuevaIncidenciaScreen> {
   Prioridad _selectedPrioridad = Prioridad.normal;
   DateTime _selectedFecha = DateTime.now();
   DateTime? _selectedFechaEntrega;
-
-  @override
-  void initState() {
-    super.initState();
-    _cargarDatos();
-  }
-
-  Future<void> _cargarDatos() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _hasError = false;
-      });
-
-      final comunidadesSnapshot = await FirebaseService.getComunidades();
-      final proveedoresSnapshot = await FirebaseService.getProveedores();
-
-      setState(() {
-        _comunidades = comunidadesSnapshot;
-        _proveedores = proveedoresSnapshot;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _hasError = true;
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
-    }
-  }
 
   @override
   void dispose() {
@@ -180,33 +146,8 @@ class _NuevaIncidenciaScreenState extends State<NuevaIncidenciaScreen> {
         title: const Text('Nueva Incidencia'),
       ),
       body: _isLoading
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Cargando comunidades...'),
-                ],
-              ),
-            )
-          : _hasError
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error, size: 48, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text('Error: $_errorMessage'),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _cargarDatos,
-                        child: const Text('Reintentar'),
-                      ),
-                    ],
-                  ),
-                )
-              : SingleChildScrollView(
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Form(
                 key: _formKey,
@@ -298,35 +239,48 @@ class _NuevaIncidenciaScreenState extends State<NuevaIncidenciaScreen> {
                     _buildSectionTitle('Datos de la Comunidad'),
                     const SizedBox(height: 12),
 
-                    _comunidades.isEmpty
-                        ? const Text(
-                            'No hay comunidades disponibles.',
+                    StreamBuilder<List<Comunidad>>(
+                      stream: FirebaseService.getComunidadesStream(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const CircularProgressIndicator();
+                        }
+
+                        final comunidades = snapshot.data!;
+
+                        if (comunidades.isEmpty) {
+                          return const Text(
+                            'No hay comunidades disponibles. Créelas en Claim Manager.',
                             style: TextStyle(color: Colors.red),
-                          )
-                        : DropdownButtonFormField<Comunidad>(
-                            initialValue: _selectedComunidad,
-                            decoration: const InputDecoration(
-                              labelText: 'Comunidad *',
-                              prefixIcon: Icon(Icons.business),
-                            ),
-                            items: _comunidades.map((comunidad) {
-                              return DropdownMenuItem(
-                                value: comunidad,
-                                child: Text(comunidad.nombre),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedComunidad = value;
-                                // Auto-completar datos de contacto si existen
-                                if (value?.telefono != null) {
-                                  _telefonoContactoController.text = value!.telefono!;
-                                }
-                              });
-                            },
-                            validator: (value) =>
-                                value == null ? 'Debe seleccionar una comunidad' : null,
+                          );
+                        }
+
+                        return DropdownButtonFormField<Comunidad>(
+                          initialValue: _selectedComunidad,
+                          decoration: const InputDecoration(
+                            labelText: 'Comunidad *',
+                            prefixIcon: Icon(Icons.business),
                           ),
+                          items: comunidades.map((comunidad) {
+                            return DropdownMenuItem(
+                              value: comunidad,
+                              child: Text(comunidad.nombre),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedComunidad = value;
+                              // Auto-completar datos de contacto si existen
+                              if (value?.telefono != null) {
+                                _telefonoContactoController.text = value!.telefono!;
+                              }
+                            });
+                          },
+                          validator: (value) =>
+                              value == null ? 'Debe seleccionar una comunidad' : null,
+                        );
+                      },
+                    ),
 
                     const SizedBox(height: 12),
 
@@ -384,28 +338,39 @@ class _NuevaIncidenciaScreenState extends State<NuevaIncidenciaScreen> {
                     _buildSectionTitle('Proveedor (Opcional)'),
                     const SizedBox(height: 12),
 
-                    DropdownButtonFormField<Proveedor>(
-                      initialValue: _selectedProveedor,
-                      decoration: const InputDecoration(
-                        labelText: 'Asignar Proveedor',
-                        prefixIcon: Icon(Icons.engineering),
-                      ),
-                      items: [
-                        const DropdownMenuItem(
-                          value: null,
-                          child: Text('Sin asignar'),
-                        ),
-                        ..._proveedores.map((proveedor) {
-                          return DropdownMenuItem(
-                            value: proveedor,
-                            child: Text('${proveedor.nombre} - ${proveedor.especialidad}'),
-                          );
-                        }),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedProveedor = value;
-                        });
+                    StreamBuilder<List<Proveedor>>(
+                      stream: FirebaseService.getProveedoresStream(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const LinearProgressIndicator();
+                        }
+
+                        final proveedores = snapshot.data!;
+
+                        return DropdownButtonFormField<Proveedor>(
+                          initialValue: _selectedProveedor,
+                          decoration: const InputDecoration(
+                            labelText: 'Asignar Proveedor',
+                            prefixIcon: Icon(Icons.engineering),
+                          ),
+                          items: [
+                            const DropdownMenuItem(
+                              value: null,
+                              child: Text('Sin asignar'),
+                            ),
+                            ...proveedores.map((proveedor) {
+                              return DropdownMenuItem(
+                                value: proveedor,
+                                child: Text('${proveedor.nombre} - ${proveedor.especialidad}'),
+                              );
+                            }),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedProveedor = value;
+                            });
+                          },
+                        );
                       },
                     ),
 
